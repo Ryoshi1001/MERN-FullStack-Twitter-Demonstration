@@ -1,9 +1,26 @@
-//ES6 module type import: dotenv and mongodb connection for cleaner code
+// https://www.youtube.com/watch?v=4GUVz2psWUg
+//: 1:39 video
+//ES6 module type import
+//import packages
 import express from "express"
 import cookieParser from "cookie-parser"
-import authRoutes from "./routes/auth.routes.js"
-import mongodbConnection from "./db/connectMongoDB.js";
 import "dotenv/config"
+import { v2 as cloudinary } from "cloudinary"
+
+//import routes
+import authRoutes from "./routes/auth.routes.js"
+import userRoutes from "./routes/user.routes.js"
+
+//import utility functions
+import mongodbConnection from "./db/connectMongoDB.js";
+
+//configure cloudinary : is v2 from cloudinary but renamed as: cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_SECRET
+})
+
 
 //create express server
 const app = express(); 
@@ -18,6 +35,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 //middleware for routes
 app.use("/api/auth", authRoutes); 
+app.use("/api/users", userRoutes); 
 
 app.listen(PORT, () => {
   console.log(`backend express server running on port: ${PORT} at http://localhost:5000`)

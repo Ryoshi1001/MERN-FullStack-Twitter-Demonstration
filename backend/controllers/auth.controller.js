@@ -117,7 +117,6 @@ export const logout = async (req, res) => {
   }
 }
 
-
 //gets authenticated user if authenticated or not As a Programmer
 export const authCheck = async (req, res) => {
   try {
