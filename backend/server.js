@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=4GUVz2psWUg
-//: 1:39 video
+//: 2:43 video
 //ES6 module type import
 //import packages
 import express from "express"
@@ -11,7 +11,7 @@ import { v2 as cloudinary } from "cloudinary"
 import authRoutes from "./routes/auth.route.js"
 import userRoutes from "./routes/user.route.js"
 import postRoutes from "./routes/post.route.js"
-
+import notificationRoutes from "./routes/notification.route.js"
 
 //import utility functions
 import mongodbConnection from "./db/connectMongoDB.js";
@@ -39,7 +39,8 @@ app.use(cookieParser())
 //middleware for routes
 app.use("/api/auth", authRoutes); 
 app.use("/api/users", userRoutes); 
-app.use("/api/posts", postRoutes)
+app.use("/api/posts", postRoutes); 
+app.use("/api/notifications", notificationRoutes); 
 
 app.listen(PORT, () => {
   console.log(`backend express server running on port: ${PORT} at http://localhost:5000`)
