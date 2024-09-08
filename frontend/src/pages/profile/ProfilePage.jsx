@@ -13,6 +13,9 @@ import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 
 const ProfilePage = () => {
+  //using ReactQuery queryKey from App.jsx example
+  // const (data:authuser, error, isError) = useQuery({queryKey: ["authUser"]})
+
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
   const [feedType, setFeedType] = useState("posts");
