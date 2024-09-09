@@ -5,19 +5,55 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import LoadingSpinner from "./LoadingSpinner.jsx"
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
+
+  //delete post: isMyPost hardcoded need to get authenticated user
+  const { data:authUser } = useQuery({queryKey: ["authUser"]})
+  
+  //variable for queryClient to use for invalidating query
+  const queryClient = useQueryClient(); 
+
+  //make mutation function for deleting post by owner
+  const {mutate:deleteMutation, isPending} = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch(`/api/posts/${post._id}`, {
+          method: "DELETE"
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong")
+        }
+        return data; 
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    },
+    onSuccess: () => {
+      toast.success("Post Deleted Successfully")
+      //invalidate query to refetch the post data: helps with refreshing posts after deleting post then will remove post from UI also
+      queryClient.invalidateQueries({ queryKey: ["posts"]}) 
+    }
+  })
+
   const postOwner = post.user;
   const isLiked = false;
 
-  const isMyPost = true;
+  //change isMyPost from hardcoded boolean to check if authUser id is post.user id
+  const isMyPost = authUser._id === post.user._id; 
 
   const formattedDate = "1h";
 
   const isCommenting = false;
 
-  const handleDeletePost = () => {};
+  const handleDeletePost = () => {
+    deleteMutation()
+  };
 
   const handlePostComment = (e) => {
     e.preventDefault();
@@ -45,7 +81,14 @@ const Post = ({ post }) => {
             </span>
             {isMyPost && (
               <span className='flex justify-end flex-1'>
-                <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />
+                {!isPending && (
+                  <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />
+                  )}
+
+                
+                {isPending && (
+                  <LoadingSpinner size="sm" />
+                )}
               </span>
             )}
           </div>
