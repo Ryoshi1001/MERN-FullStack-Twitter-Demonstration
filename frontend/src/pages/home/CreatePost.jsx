@@ -77,6 +77,7 @@ const CreatePost = () => {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
+
         {img && (
           <div className='relative w-72 mx-auto'>
             <IoCloseSharp
