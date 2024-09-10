@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 5000;
 
 //create Middleware needed
 //middleware for parsing payload req.body req.params
-app.use(express.json())
+app.use(express.json({limit: "5mb"})); //to parse req.body limit should not be too high DOS denial of service can happen
 //middleware for parsing url encoded items; also used in postman for testing requests for routes: to parse form data(urlencoded) 
 app.use(express.urlencoded({ extended: true }))
 //middleware for authentication authorization protectRoute.js file: parse cookies
