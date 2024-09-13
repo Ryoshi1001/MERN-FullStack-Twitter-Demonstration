@@ -8,6 +8,9 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import LoadingSpinner from './LoadingSpinner.jsx';
+import { formatPostDate } from '../../utils/date/index.js';
+
+
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState('');
@@ -17,6 +20,17 @@ const Post = ({ post }) => {
 
   //variable for queryClient to use for invalidating query
   const queryClient = useQueryClient();
+
+  //variables
+  const postOwner = post.user;
+  let isLiked = post.likes.includes(authUser._id);
+
+  //change isMyPost from hardcoded boolean to check if authUser id is post.user id
+  const isMyPost = authUser._id === post.user._id;
+
+  // add function to formattedDate from utils/date to calculate difference in time from post creation
+  const formattedDate = formatPostDate(post.createdAt);
+
 
   //make mutation function for deleting post by owner
   const { mutate: deleteMutation, isPending: isDeleting } = useMutation({
@@ -40,7 +54,6 @@ const Post = ({ post }) => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
-
 
   // post like mutation
   const { mutate: likeMutation, isPending:isLiking } = useMutation({
@@ -79,15 +92,36 @@ const Post = ({ post }) => {
     }
   });
 
-  const postOwner = post.user;
-  let isLiked = post.likes.includes(authUser._id);
-
-  //change isMyPost from hardcoded boolean to check if authUser id is post.user id
-  const isMyPost = authUser._id === post.user._id;
-
-  const formattedDate = '1h';
-
-  const isCommenting = false;
+  // post comment mutation
+  const { mutate:commentMutation, isPending:isCommenting  } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch(`/api/posts/comment/${post._id}`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json",
+          }, 
+          body: JSON.stringify({text: comment}),  
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong")
+        }
+        return data; 
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    },
+    onSuccess: () => {
+      toast.success("Comment Posted Successfully")
+      setComment("")
+      //this will post all comments on top of eachother in Modal
+      queryClient.invalidateQueries({ queryKey: ["posts"]})
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
 
   const handleDeletePost = () => {
     deleteMutation();
@@ -95,6 +129,9 @@ const Post = ({ post }) => {
 
   const handlePostComment = (e) => {
     e.preventDefault();
+    //if in loading state
+    if (isCommenting) return; 
+    commentMutation(); 
   };
 
   const handleLikePost = () => {
