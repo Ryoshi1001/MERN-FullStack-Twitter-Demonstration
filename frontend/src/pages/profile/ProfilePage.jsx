@@ -179,7 +179,7 @@ const ProfilePage = () => {
                   </span>
                   <span className="text-sm my-1">{user?.bio}</span>
                 </div>
-
+                
                 <div className="flex gap-2 flex-wrap">
                   {user?.link && (
                     <div className="flex gap-1 items-center ">

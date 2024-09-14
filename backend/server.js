@@ -1,10 +1,9 @@
-// https://www.youtube.com/watch?v=4GUVz2psWUg
-//: 3:53 video
 //ES6 module type import
 //import packages
 import express from "express"
 import cookieParser from "cookie-parser"
 import "dotenv/config"
+import path from "path"
 import { v2 as cloudinary } from "cloudinary"
 
 //import routes
@@ -28,6 +27,9 @@ cloudinary.config({
 const app = express(); 
 const PORT = process.env.PORT || 5000; 
 
+//adding when deploying website
+const __dirname = path.resolve()
+
 //create Middleware needed
 //middleware for parsing payload req.body req.params
 app.use(express.json({limit: "5mb"})); //to parse req.body limit should not be too high DOS denial of service can happen
@@ -41,6 +43,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes); 
 app.use("/api/posts", postRoutes); 
 app.use("/api/notifications", notificationRoutes); 
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist"))); 
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
+  })
+}
 
 app.listen(PORT, () => {
   console.log(`backend express server running on port: ${PORT} at http://localhost:5000`)
