@@ -14,6 +14,7 @@ import notificationRoutes from "./routes/notification.route.js"
 
 //import utility functions
 import mongodbConnection from "./db/connectMongoDB.js";
+import axios from "axios"
 
 //configure cloudinary : is v2 from cloudinary but renamed as: cloudinary
 cloudinary.config({
