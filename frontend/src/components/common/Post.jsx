@@ -22,12 +22,11 @@ const Post = ({ post }) => {
   const queryClient = useQueryClient();
 
   //variables
-  const postOwner = post.user;
+  const postOwner = post.user || {};
   let isLiked = post.likes.includes(authUser._id);
 
   //change isMyPost from hardcoded boolean to check if authUser id is post.user id
-  const isMyPost = authUser._id === post.user._id;
-
+  const isMyPost = authUser && post.user && authUser._id === post.user._id;
   // add function to formattedDate from utils/date to calculate difference in time from post creation
   const formattedDate = formatPostDate(post.createdAt);
 

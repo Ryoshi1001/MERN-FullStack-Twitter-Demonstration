@@ -59,17 +59,17 @@ app.listen(PORT, () => {
 })
 
 //Render Keep-alive reloader function helps with instance spin-down: 
-const url = "https://mern-fullstack-twitter-demonstration.onrender.com"; 
-const interval = 30000; 
-const reloadWebsite = () => {
-  axios.get(url)
-  .then(response => {
-    console.log(`Reloaded website at ${new Date().toUTCString()} : Status Code ${response.status}`); 
-  })
-  .catch(error => {
-    console.log(`Error reloading website at ${new Date().toUTCString()}:`, error.message); 
-  });
-}; 
+// const url = "https://mern-fullstack-twitter-demonstration.onrender.com"; 
+// const interval = 30000; 
+// const reloadWebsite = () => {
+//   axios.get(url)
+//   .then(response => {
+//     console.log(`Reloaded website at ${new Date().toUTCString()} : Status Code ${response.status}`); 
+//   })
+//   .catch(error => {
+//     console.log(`Error reloading website at ${new Date().toUTCString()}:`, error.message); 
+//   });
+// }; 
 
-setInterval(reloadWebsite, interval)
+// setInterval(reloadWebsite, interval)
 
