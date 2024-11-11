@@ -45,6 +45,19 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes); 
 app.use("/api/notifications", notificationRoutes); 
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist"))); 
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
+  })
+}
+
+app.listen(PORT, () => {
+  console.log(`backend express server running on port: ${PORT} at http://localhost:5000`)
+  mongodbConnection(); 
+})
+
 //Render Keep-alive reloader function helps with instance spin-down: 
 const url = "https://mern-fullstack-twitter-demonstration.onrender.com"; 
 const interval = 30000; 
@@ -59,17 +72,4 @@ const reloadWebsite = () => {
 }; 
 
 setInterval(reloadWebsite, interval)
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "/frontend/dist"))); 
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
-  })
-}
-
-app.listen(PORT, () => {
-  console.log(`backend express server running on port: ${PORT} at http://localhost:5000`)
-  mongodbConnection(); 
-})
 
