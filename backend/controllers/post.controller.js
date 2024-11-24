@@ -48,7 +48,9 @@ export const createPost = async (req, res) => {
 		}
 
 		if (img) {
-			const uploadedResponse = await cloudinary.uploader.upload(img);
+			const uploadedResponse = await cloudinary.uploader.upload(img, {
+				folder: "twitterapp"
+			});
 			img = uploadedResponse.secure_url;
 		}
 
@@ -81,12 +83,15 @@ export const deletePost = async (req, res) => {
 			return res.status(401).json({ error: "You are not authorized to delete this post"})
 		}
 
-		//if post has image delete it from cloudinary 
+		//if post has image delete it from Cloudinary folder
 		if (post.img) {
-			const imgId = post.img.split("/").pop().split(".")[0]; 
-			await cloudinary.uploader.destroy(imgId)
-		}
+			const urlParts = post.img.split('/');
+			const filename = urlParts.pop(); // Get the filename with extension
+			const folderPath = urlParts.pop(); // Get the folder name
+			const publicId = `${folderPath}/${filename.split('.')[0]}`; // Construct public ID
 
+			await cloudinary.uploader.destroy(publicId); // Delete from Cloudinary
+	}
 		//delete post document from mongodb also 
 		await Post.findByIdAndDelete(req.params.id); 
 

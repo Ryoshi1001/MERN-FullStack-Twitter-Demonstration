@@ -128,11 +128,11 @@ export const followUnFollowUser = async (req, res) => {
   }
 };
 
-
 export const updateUser = async (req, res) => {
   //user might want to update these things use destructuring and req.body
-  const { fullName, email, username, currentPassword, newPassword, bio, link } = req.body;
-  let { profileImg, coverImg } = req.body; 
+  const { fullName, email, username, currentPassword, newPassword, bio, link } =
+    req.body;
+  let { profileImg, coverImg } = req.body;
 
   const userId = req.user._id;
 
@@ -140,7 +140,7 @@ export const updateUser = async (req, res) => {
     //check if have user
     let user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({ error: "No user Found"})
+      return res.status(400).json({ error: 'No user Found' });
     }
     //if user wants to UPDATE PASSWORD
     //check if only currentPassword or newPassword entered for update
@@ -148,81 +148,105 @@ export const updateUser = async (req, res) => {
       (currentPassword && !newPassword) ||
       (!currentPassword && newPassword)
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            'Current Password and New Password can be needed to update Password',
-        });
+      return res.status(400).json({
+        error:
+          'Current Password and New Password can be needed to update Password',
+      });
     }
 
     //if currentPassword and newPassword are entered update password
     if (currentPassword && newPassword) {
-            //import bcryptjs for checking currentPassword
-            const isMatch = await bcrypt.compare(currentPassword, user.password);
+      //import bcryptjs for checking currentPassword
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
 
-            //if does not match and if newPassword can be less than 6 digits
-            if (!isMatch) {
-              return res.status(400).json({ error: 'Current password is incorrect' });
-            }
-            if (newPassword.length < 6) {
-              return res
-                .status(400)
-                .json({ error: 'Password should be at least 6 characters long' });
-            }
-      
-            //if passes checks create and hash new password
-            const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(newPassword, salt);
-    }
-
-
-      //if user wants to UPDATE PROFILE IMAGE: using Cloudinary here
-      if (profileImg) {
-        //if user already has profileImg uploaded to erase profileImg from cloudinary to save cloud drive space: id of image from cloudinary url is needed to get Id : using .destroy, split, pop, split: id is at end of url
-        //splits url by /, .pop grabs last section which has Id.png then another split before the "." between ID and png [0] gives the first index
-        //https://res.cloudinary.com/lksafj/image/upload/lkjfe/kldsjfijijfa;j4234id.png example
-        if (user.profileImg) {
-          await cloudinary.uploader.destroy(
-            user.profileImg.split("/").pop().split('.')[0]
-          );
-        }
-
-        //Uploading image in if statement using cloudinary:
-        //cloudinary.uploaded.upload() method Then add .secure_url to image file in upload() method and variable
-        const uploadedResponse = await cloudinary.uploader.upload(profileImg);
-        profileImg = uploadedResponse.secure_url;
+      //if does not match and if newPassword can be less than 6 digits
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+      if (newPassword.length < 6) {
+        return res
+          .status(400)
+          .json({ error: 'Password should be at least 6 characters long' });
       }
 
-      if (coverImg) {
-        //destroys erases image if exists in cloudinary and adding new coverImg same as profileImg
-        if (user.coverImg) {
-          await cloudinary.uploader.destroy(
-            user.coverImg.split("/").pop().split('.')[0]
-          );
-        }
-        const uploadedResponse = await cloudinary.uploader.upload(coverImg);
-        coverImg = uploadedResponse.secure_url;
+      //if passes checks create and hash new password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    //if user wants to UPDATE PROFILE IMAGE: using Cloudinary here
+    if (profileImg) {
+      //if user already has profileImg uploaded to erase profileImg from cloudinary to save cloud drive space: id of image from cloudinary url is needed to get Id : using .destroy, split, pop, split: id is at end of url
+      //splits url by /, .pop grabs last section which has Id.png then another split before the "." between ID and png [0] gives the first index
+      //https://res.cloudinary.com/lksafj/image/upload/lkjfe/kldsjfijijfa;j4234id.png example
+
+      //non folder deletion method for Cloudinary
+      // if (user.profileImg) {
+      //   await cloudinary.uploader.destroy(
+      //     user.profileImg.split("/").pop().split('.')[0]
+      //   );
+      // }
+
+      //ai cloudinary deletion method add to delete from folder in Cloudinary
+      if (user.profileImg) {
+        const urlParts = user.profileImg.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const folderPath = urlParts[urlParts.length - 2];
+        const publicId = `${folderPath}/${filename.split('.')[0]}`;
+        await cloudinary.uploader.destroy(publicId);
       }
 
-      //make all update if something new added will be new if not updated will be original key
-      user.fullName = fullName || user.fullName;
-      user.email = email || user.email;
-      user.username = username || user.username;
-      user.bio = bio || user.bio;
-      user.link = link || user.link;
-      user.profileImg = profileImg || user.profileImg;
-      user.coverImg = coverImg || user.coverImg;
-
-      //save updates for user
-      user = await user.save();
-
-      //not want to put user password in response to client should be null
-      user.password = null;
-
-      return res.status(200).json(user);
-    } catch (error) {
-      console.log('Error: for updateUser in user.controller.js', error.message);
-      res.status(500).json({ error: error.message });
+      //Uploading image in if statement using cloudinary:
+      //cloudinary.uploaded.upload() method Then add .secure_url to image file in upload() method and variable
+      const uploadedResponse = await cloudinary.uploader.upload(profileImg, {
+        folder: 'twitterapp',
+      });
+      profileImg = uploadedResponse.secure_url;
     }
+
+    if (coverImg) {
+      //destroys erases image if exists in cloudinary and adding new coverImg same as profileImg
+
+      //non folder deletion method for Cloudinary
+      // if (user.coverImg) {
+      //   await cloudinary.uploader.destroy(
+      //     user.coverImg.split("/").pop().split('.')[0]
+      //   );
+      // }
+
+      //ai cloudinary deletion method added to delete from folder in Cloudinary
+      if (user.coverImg) {
+        const urlParts = user.coverImg.split('/');
+        const publicId = `${urlParts[urlParts.length - 2]}/${
+          urlParts.pop().split('.')[0]
+        }`;
+
+        await cloudinary.uploader.destroy(publicId);
+      }
+      const uploadedResponse = await cloudinary.uploader.upload(coverImg, {
+        folder: 'twitterapp',
+      });
+      coverImg = uploadedResponse.secure_url;
+    }
+
+    //make all update if something new added will be new if not updated will be original key
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.username = username || user.username;
+    user.bio = bio || user.bio;
+    user.link = link || user.link;
+    user.profileImg = profileImg || user.profileImg;
+    user.coverImg = coverImg || user.coverImg;
+
+    //save updates for user
+    user = await user.save();
+
+    //not want to put user password in response to client should be null
+    user.password = null;
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log('Error: for updateUser in user.controller.js', error.message);
+    res.status(500).json({ error: error.message });
+  }
 };
